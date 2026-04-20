@@ -68,6 +68,7 @@ import com.android.gpstest.library.util.PreferenceUtil.runInBackground
 import com.android.gpstest.library.util.PreferenceUtils.isTrackingStarted
 import com.android.gpstest.map.MapConstants
 import com.android.gpstest.ui.NavigationDrawerFragment.NavigationDrawerCallbacks
+import com.android.gpstest.ui.mock.MockLocationFragment
 import com.android.gpstest.ui.sky.SkyFragment
 import com.android.gpstest.ui.status.StatusFragment
 import com.android.gpstest.util.BuildUtils
@@ -104,6 +105,7 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
     private var mapFragment: MapFragment? = null
     private var skyFragment: SkyFragment? = null
     private var accuracyFragment: MapFragment? = null
+    private var mockLocationFragment: MockLocationFragment? = null
 
     // Main signal view model
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -432,6 +434,10 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
                 showAccuracyFragment()
                 currentNavDrawerPosition = item
             }
+            NavigationDrawerFragment.NAVDRAWER_ITEM_MOCK_LOCATION -> if (currentNavDrawerPosition != NavigationDrawerFragment.NAVDRAWER_ITEM_MOCK_LOCATION) {
+                showMockLocationFragment()
+                currentNavDrawerPosition = item
+            }
             NavigationDrawerFragment.NAVDRAWER_ITEM_INJECT_PSDS_DATA -> forcePsdsInjection()
             NavigationDrawerFragment.NAVDRAWER_ITEM_INJECT_TIME_DATA -> forceTimeInjection()
             NavigationDrawerFragment.NAVDRAWER_ITEM_CLEAR_AIDING_DATA -> {
@@ -477,6 +483,7 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
         hideMapFragment()
         hideSkyFragment()
         hideAccuracyFragment()
+        hideMockLocationFragment()
         if (benchmarkController != null) {
             benchmarkController!!.hide()
         }
@@ -512,6 +519,7 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
         hideStatusFragment()
         hideSkyFragment()
         hideAccuracyFragment()
+        hideMockLocationFragment()
         if (benchmarkController != null) {
             benchmarkController!!.hide()
         }
@@ -550,6 +558,7 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
         hideStatusFragment()
         hideMapFragment()
         hideAccuracyFragment()
+        hideMockLocationFragment()
         if (benchmarkController != null) {
             benchmarkController!!.hide()
         }
@@ -584,6 +593,7 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
         hideStatusFragment()
         hideMapFragment()
         hideSkyFragment()
+        hideMockLocationFragment()
         // Show fragment (we use show instead of replace to keep the map state)
         if (accuracyFragment == null) {
             // First check to see if an instance of fragment already exists
@@ -612,6 +622,33 @@ class MainActivity : AppCompatActivity(), NavigationDrawerCallbacks {
         accuracyFragment = fm.findFragmentByTag(MapConstants.MODE_ACCURACY) as MapFragment?
         if (accuracyFragment != null && !accuracyFragment!!.isHidden) {
             fm.beginTransaction().hide(accuracyFragment!!).commit()
+        }
+    }
+
+    private fun showMockLocationFragment() {
+        val fm = supportFragmentManager
+        hideStatusFragment()
+        hideMapFragment()
+        hideSkyFragment()
+        hideAccuracyFragment()
+        if (mockLocationFragment == null) {
+            mockLocationFragment = fm.findFragmentByTag(MockLocationFragment.TAG) as MockLocationFragment?
+            if (mockLocationFragment == null) {
+                mockLocationFragment = MockLocationFragment()
+                fm.beginTransaction()
+                    .add(R.id.fragment_container, mockLocationFragment!!, MockLocationFragment.TAG)
+                    .commit()
+            }
+        }
+        fm.beginTransaction().show(mockLocationFragment!!).commit()
+        title = resources.getString(R.string.mock_location_title)
+    }
+
+    private fun hideMockLocationFragment() {
+        val fm = supportFragmentManager
+        mockLocationFragment = fm.findFragmentByTag(MockLocationFragment.TAG) as MockLocationFragment?
+        if (mockLocationFragment != null && !mockLocationFragment!!.isHidden) {
+            fm.beginTransaction().hide(mockLocationFragment!!).commit()
         }
     }
 
